@@ -1,5 +1,5 @@
 /*
-Copyright(c) 2013 Crmvillage.biz srl s
+Copyright(c) 2013 Crmvillage.biz srl
 */
 /***************************************************************************************
  * The contents of this file are subject to the VTECRM License Agreement
@@ -20442,7 +20442,6 @@ Ext.define('Vtecrm.store.VteModulesOffline', {
 
         listeners: {
         	addrecords: function() {
-        		//console.log('sdf');
         	},
         	load: function(self, records) {
         		var i,j, record, label, trans, defaults;
@@ -21242,15 +21241,12 @@ Ext.define('Vtecrm.view.ShowRecord', {
     	    	    },
 		    {
 			xtype: 'button',
+			itemId: 'btnPdf',
     	    	    	align: 'left',
     	    	    	iconMask: true,
     	    	    	iconCls: 'more',
 			style: { // segnalibro style
 				'background-color': '#00ba00'
-			},
-			handler: function(){
-				console.log('sdf');
-				//populatePdfMaker();
 			}
 		    },
     	    	    {
@@ -21432,6 +21428,14 @@ Ext.define('Vtecrm.view.ShowRecord', {
 		 * @hide
 		 */
 		control: {
+			'#btnPdf': {
+				tap: function(){
+					console.log('morebutton');
+					this.down('#recordFormCont').hide();
+					this.populatePdfMaker(2500000);
+				}
+			},
+			
 			'#recordBtnBack': {
 				tap: function() {
 					var me = this;
@@ -21564,6 +21568,7 @@ Ext.define('Vtecrm.view.ShowRecord', {
 
 				select: function(self, record, opts) {
 	    			// nascondo gli altri form
+				console.log('asd', record);
 	    			var index = record.get('xindex'),
 	    				blockid = record.get('blockid'),
 	    				parent = this,
