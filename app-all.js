@@ -1,5 +1,5 @@
 /*
-Copyright(c) 2013 Crmvillage.biz srl
+Copyright(c) 2013 Crmvillage.biz srl s
 */
 /***************************************************************************************
  * The contents of this file are subject to the VTECRM License Agreement
