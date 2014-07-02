@@ -10959,7 +10959,27 @@ Ext.define('Vtecrm.view.ListPdfMaker', {
 		    	unMaskView();
 		    	if (response.success == true) {
 		    		Ext.Msg.alert('', Vtecrm.app.translateString('SINGLE_Documents')+' '+LANG.correctly_saved, function() {
-		    			me.setActiveItem(0);
+				
+		    		me.setActiveItem(0);
+				
+				newList = Ext.create('Vtecrm.view.ListSearch', {
+					'module': 'Documents',
+					toolbar: true,
+					useSearch: true,
+					extraFields: ['description', 'filename'],
+			
+					listeners: {
+						// override tap handler
+						itemtap: function(self, index, target, record, e){
+							Vtecrm.app.touchRequest('GetRecord', {'module': 'Documents', 'record': record.raw.crmid}, true, function(data) {
+								window.open(data.filename, '_system', 'location=no');
+							});
+						}
+					}
+				});
+				newList.getStore().load();
+				newList.show();
+				
 		    		});
 		    	} else {
 		    		Ext.Msg.alert(LANG.error, response.error);
@@ -21430,7 +21450,8 @@ Ext.define('Vtecrm.view.ShowRecord', {
 		control: {
 			'#btnPdf': {
 				tap: function(){
-					console.log('morebutton');
+					this.down('#btnPdf').hide();
+					this.down('#recordBtnDelete').hide();
 					this.down('#recordFormCont').hide();
 					this.populatePdfMaker(2500000);
 				}
@@ -21568,7 +21589,6 @@ Ext.define('Vtecrm.view.ShowRecord', {
 
 				select: function(self, record, opts) {
 	    			// nascondo gli altri form
-				console.log('asd', record);
 	    			var index = record.get('xindex'),
 	    				blockid = record.get('blockid'),
 	    				parent = this,
@@ -22662,7 +22682,9 @@ Ext.define('Vtecrm.view.ShowRecord', {
 
 		if ((module == 'Documents' || module == 'Myfiles') && me.savedValues && !empty(me.savedValues.filename)) {
 			var fname = me.savedValues.filename;
+			console.log('sdvds', savedValues);
 			window.open(fname, '_system', 'location=no');
+			//segnalibro download Ext.device.Device.openURL('http://ares/esqogito/storage/2014/July/week1/2608693_RP_0000004.pdf');
 		}
 
 	}
