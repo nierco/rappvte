@@ -10937,6 +10937,7 @@ Ext.define('Vtecrm.view.ListPdfMaker', {
      * Sends the document to the server to save it
      */
     saveDocument: function(values) {
+	// segnalibro modificata interamente
     	var me = this,
     		mtime =  (new Date()).getTime();
 
@@ -10964,8 +10965,14 @@ Ext.define('Vtecrm.view.ListPdfMaker', {
 				
 				newList = Ext.create('Vtecrm.view.ListSearch', {
 					'module': 'Documents',
-					toolbar: true,
-					useSearch: true,
+					'toolbar': true,
+					'useSearch': true,
+					'centered': true,
+					'height': '80%',
+					'width': '80%',
+					'hideOnMaskTap': true,
+					'useBackButton': false,
+					'modal': true,
 					extraFields: ['description', 'filename'],
 			
 					listeners: {
@@ -10979,6 +10986,7 @@ Ext.define('Vtecrm.view.ListPdfMaker', {
 				});
 				newList.getStore().load();
 				newList.show();
+				//console.log('currentdate', globalCalendar.down('#touchCalendarDay').getActiveItem().currentDate);
 				
 		    		});
 		    	} else {
@@ -23156,6 +23164,14 @@ Ext.application({
     ],
     profiles: [],
     controllers: [],
+    "css": [
+        {
+            "path": "resources/css/cupertino.css",
+            "platform": ["chrome", "safari", "ios", "ios-classic", "firefox"],
+            "theme": "Cupertino",
+            "update": "delta"
+        }
+    ],
 
     // store degli utenti
     userstore: undefined,
