@@ -10411,6 +10411,7 @@ Ext.define('Vtecrm.view.ListPdfMaker', {
 				    	xtype: 'button',
 				    	text: LANG.pdfmaker_sendemail,
 				    	ui: 'action',
+					hidden: true // segnalibro tolta funzionalita di invio rapportino via mail
 				    },
 				]
 			},
@@ -16834,7 +16835,7 @@ Ext.define('Vtecrm.field.RelatedTo', {
     },
 
     constructor: function(config) {
-    	config.button = true;
+    	config.button = false; //segnalibro tolgo i bottoni che rimandano ad altri moduli perche crea instabilità
     	config.buttonCls = 'action';
     	this.callParent([config]);
     },
