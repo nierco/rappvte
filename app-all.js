@@ -75,8 +75,8 @@ if (!String.prototype.url2link) {
 		// open new broswer tab
 		var limit = (Ext.os.is.Phone ? 40 : 60),
 			ret =
-			this.replace(/((ht|f)tps?:\/\/.*?)(([\r\t\n ]|$))/ig, '<a class="alink" href="#" onclick="window.open(\'$1\', \'_system\', \'location=no\');">$1</a>$3')
-				.replace(/(^|[^\/\/])(www\..*?)([\r\t\n ]|$)/ig, '$1<a class="alink" href="#" onclick="window.open(\'http://$2\', \'_system\', \'location=no\');">$2</a>$3')
+			this.replace(/((ht|f)tps?:\/\/.*?)(([\r\t\n ]|$))/ig, '<a class="alink" href="#" onclick="window.open(\'$1\', \'_system\', \'location=yes\');">$1</a>$3')
+				.replace(/(^|[^\/\/])(www\..*?)([\r\t\n ]|$)/ig, '$1<a class="alink" href="#" onclick="window.open(\'http://$2\', \'_system\', \'location=yes\');">$2</a>$3')
 				.replace(/&amp;/, '&');
 		// shorten link
 		var re = /<a class="alink"/g,
@@ -4401,7 +4401,7 @@ Ext.define('Vtecrm.view.Main', {
 						align: "right",
 						hidden: (Vtecrm && Vtecrm.app && Vtecrm.app.getHasLoginInfo()),
 					    handler: function () {
-					    	window.open(crm_website, '_system', 'location=no');
+					    	window.open(crm_website, '_system', 'location=yes');
 					    },
 					}
 		        ]
@@ -10981,6 +10981,9 @@ Ext.define('Vtecrm.view.ListPdfMaker', {
 						itemtap: function(self, index, target, record, e){
 							Vtecrm.app.touchRequest('GetRecord', {'module': 'Documents', 'record': record.raw.crmid}, true, function(data) {
 								window.open(data.filename, '_system', 'location=no');
+                                //window.location = data.filename;
+                                //navigator.app.loadUrl( data.filename, {openExternal:true} );
+                                //Ext.device.Device.openURL(data.filename);
 							});
 						}
 					}
@@ -13111,7 +13114,7 @@ Ext.define('Vtecrm.view.Messages', {
 			if (innerLink) {
 				innerLink = innerLink
 					.replace(/target=['"][^'"]*['"]/ig, '')
-					.replace(/href=['"]([^'"]*)['"]/ig, 'onclick="window.open(\'$1\', \'_system\', \'location=no\');"')
+					.replace(/href=['"]([^'"]*)['"]/ig, 'onclick="window.open(\'$1\', \'_system\', \'location=yes\');"')
 					.replace(/<a /g, '<a href="javascript:void(0);" ');
 				message = message.slice(0, match.index) + innerLink + message.slice(l1+1);
 			}
@@ -13485,7 +13488,7 @@ Ext.define('Vtecrm.view.Messages', {
 		}, true, function(data) {
 			if (data && data.token) {
 				var url = vtwsUrl.replace('modules/Touch/', '')+'index.php?share_action=dl_attachment&sharetoken='+data.token;
-				window.open(url, '_system', 'location=no');
+				window.open(url, '_system', 'location=yes');
 			} else {
 				Ext.Msg.alert(LANG.error, LANG.download_error);
 			}
@@ -16760,7 +16763,7 @@ Ext.define('Vtecrm.field.UrlButton', {
     			gotoaddr = val;
     		}
     		if (me.getNewWindow()) {
-    			window.open(gotoaddr, '_system', 'location=no');
+    			window.open(gotoaddr, '_system', 'location=yes');
     		} else {
     			location.href = gotoaddr;
     		}
@@ -22691,8 +22694,7 @@ Ext.define('Vtecrm.view.ShowRecord', {
 
 		if ((module == 'Documents' || module == 'Myfiles') && me.savedValues && !empty(me.savedValues.filename)) {
 			var fname = me.savedValues.filename;
-			console.log('sdvds', savedValues);
-			window.open(fname, '_system', 'location=no');
+			window.open(fname, '_system', 'location=yes');
 			//segnalibro download Ext.device.Device.openURL('http://ares/esqogito/storage/2014/July/week1/2608693_RP_0000004.pdf');
 		}
 
@@ -23116,7 +23118,7 @@ Ext.define("Ext.ux.TouchCalendar",{extend:"Ext.carousel.Carousel",xtype:"calenda
 Ext.application({
     name: 'Vtecrm',
 
-    requires: ['Vtecrm.store.proxy.WebSQL'],
+    requires: ['Vtecrm.store.proxy.WebSQL', 'Ext.device.Device'],
 
     // TODO: caricare solo quelli che servono
     views: [
