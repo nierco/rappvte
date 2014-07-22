@@ -1,3 +1,5 @@
+//todo
+// esportare il pdf senza salvarlo nel server (via web services)
 /*
 Copyright(c) 2013 Crmvillage.biz srl
 */
@@ -1780,6 +1782,9 @@ var globalCalendar = null;
 
 // segnalibro variabile globale dell'azienda selezionata nei rapportini
 var globalAccountSelected = '';
+
+// segnalibro variabile globale del nome dell'evento selezionato
+var globalEventSelected = '';
 
 /**
  * @class CONFIG
@@ -10410,8 +10415,7 @@ Ext.define('Vtecrm.view.ListPdfMaker', {
 				    	itemId: 'btnSendEmail',
 				    	xtype: 'button',
 				    	text: LANG.pdfmaker_sendemail,
-				    	ui: 'action',
-					hidden: true // segnalibro tolta funzionalita di invio rapportino via mail
+				    	ui: 'action'
 				    },
 				]
 			},
@@ -10750,9 +10754,16 @@ Ext.define('Vtecrm.view.ListPdfMaker', {
 		// creo i campi
 		for (var j=0; j<useFields.length; ++j) {
 			var fieldname = useFields[j].name,
-				fieldvalue = '',
-				fieldinfo = createFieldConfig('Documents', useFields[j], null, fieldvalue);
-
+				fieldvalue = '';
+                                
+                        // segnalibro nome documento
+                        if (fieldname == 'notes_title'){
+                            var fieldinfo = createFieldConfig('Documents', useFields[j], null, globalEventSelected);
+                        }
+                        else{
+                            var fieldinfo = createFieldConfig('Documents', useFields[j], null, fieldvalue);
+                        }
+                        
 			var fieldcmp = Ext.create(fieldinfo[0], fieldinfo[1]);
 			// salvo per ogni campo la propria struttura
 			fieldcmp.struct = useFields[j];
@@ -10985,9 +10996,14 @@ Ext.define('Vtecrm.view.ListPdfMaker', {
 						}
 					}
 				});
+                                newList.getStore().setPageSize(10000);
 				newList.getStore().load();
+                                //segnalibro filtro col nome del rapportino
+                               newList.getStore().filterBy(function(record){
+                                    if(record.get('entityname') == globalEventSelected) 
+                                        return true; 
+                                });
 				newList.show();
-				//console.log('currentdate', globalCalendar.down('#touchCalendarDay').getActiveItem().currentDate);
 				
 		    		});
 		    	} else {
@@ -21277,6 +21293,7 @@ Ext.define('Vtecrm.view.ShowRecord', {
     	    	    	align: 'left',
     	    	    	iconMask: true,
     	    	    	iconCls: 'more',
+                       //hidden: (this.entityName == null ? true : false),
 			style: { // segnalibro style
 				'background-color': '#00ba00'
 			}
@@ -21465,6 +21482,37 @@ Ext.define('Vtecrm.view.ShowRecord', {
 					this.down('#btnPdf').hide();
 					this.down('#recordBtnDelete').hide();
 					this.down('#recordFormCont').hide();
+                                        
+//                                        newList = Ext.create('Vtecrm.view.ListSearch', {
+//					'module': 'Documents',
+//					'toolbar': true,
+//					'useSearch': true,
+//					'centered': true,
+//					'height': '80%',
+//					'width': '80%',
+//					'hideOnMaskTap': true,
+//					'useBackButton': false,
+//					'modal': true,
+//					extraFields: ['description', 'filename'],
+			
+//					listeners: {
+//						// override tap handler
+//						itemtap: function(self, index, target, record, e){
+//							Vtecrm.app.touchRequest('GetRecord', {'module': 'Documents', 'record': record.raw.crmid}, true, function(data) {
+//								window.open(data.filename, '_system', 'location=no');
+//							});
+//						}
+//					}
+//				});
+//                                newList.getStore().setPageSize(10000);
+//				newList.getStore().load();
+//                                //segnalibro filtro col nome del rapportino
+//                               newList.getStore().filterBy(function(record){
+//                                    if(record.get('entityname') == globalEventSelected) 
+//                                        return true; 
+//                                });
+//				newList.show();
+                                
 					this.populatePdfMaker(2500000);
 				}
 			},
@@ -21895,7 +21943,11 @@ Ext.define('Vtecrm.view.ShowRecord', {
 
 		me.scrollPull = null;
 	},
-
+        
+        hideBtnPdf: function(){
+		this.down('#btnPdf').hide();
+        },
+        
 	// extract email addresses from the current record
 	/**
 	 * Extract all the email addresses (from email fields) from this record
@@ -22213,9 +22265,27 @@ Ext.define('Vtecrm.view.ShowRecord', {
 
 					if (!crmid) {
 						fieldvalue = (fieldname == 'diary_date' ? globalCalendar.getDateValues().event_start : (me.savedValues ? me.savedValues[fieldname] : null));// segnalibro savedvalues per la data selezionata
-						
+						if (fieldname == 'hh_start') {
+							var selected = globalCalendar.down('#touchCalendarDay').getActiveItem().getValue();
+							if (selected && selected.getHours() != 0 ) {
+								fieldvalue = ('0' + String(selected.getHours())).slice(-2);
+							}
+                                              } 
+                                              if (fieldname == 'hh_end') {
+							var selected = globalCalendar.down('#touchCalendarDay').getActiveItem().getValue();
+							if (selected && selected.getHours() != 0 ) {
+								fieldvalue = ('0' + String(selected.getHours()+1)).slice(-2);
+							}
+                                              }
+					      if (fieldname == 'mm_end' || fieldname == 'mm_start') {
+							var selected = globalCalendar.down('#touchCalendarDay').getActiveItem().getValue();
+							if (selected && selected.getHours() != 0 ) {
+								fieldvalue = String(selected.getMinutes());
+							}
+                                              }
 					} else {
 						if (fieldname == 'link_to_account') globalAccountSelected = me.savedValues['link_to_account'].display.trim();
+                                               if (fieldname == 'diary_no') globalEventSelected = me.savedValues['diary_no']; 
 						fieldvalue = (me.savedValues ? me.savedValues[fieldname] : null);
 					}
 					var	fieldinfo = createFieldConfig(block.get('module'), fields[j], this, fieldvalue, true, hidden); //segnalibro aggiunto parametro hidden per nascondere i campi inutili
@@ -24293,6 +24363,10 @@ Ext.application({
 		me.showrecord.setModule(mod);
 		me.showrecord.setEntityName(entityname);
 		me.showrecord.setCrmid(recordid);
+                
+                if(recordid == null){ //senalibro btnpdf
+                    me.showrecord.hideBtnPdf();
+                }
 
 		if (!empty(parent)) me.showrecord.setParentRecord(parent);
 
