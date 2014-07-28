@@ -10417,6 +10417,12 @@ Ext.define('Vtecrm.view.ListPdfMaker', {
 				    	text: LANG.pdfmaker_sendemail,
 				    	ui: 'action'
 				    },
+				    {
+				    	itemId: 'btnPrint',
+				    	xtype: 'button',
+				    	text: 'Stampa',
+				    	ui: 'action'
+				    }
 				]
 			},
 			// form per documento
@@ -10640,6 +10646,20 @@ Ext.define('Vtecrm.view.ListPdfMaker', {
     					listTemplates = me.down('#listTemplates'),
     					listRecipients = me.down('#listRecipients');
     				me.setActiveItem(listRecipients);
+    			}
+    		},
+
+    		'#btnPrint': {
+    			tap: function(self) {
+    				var me = this,
+    					formDocs = me.down('#formDocs');
+    				//me.setActiveItem(formDocs);
+    				//me.animateActiveItem(formDocs, {duration: 250, type:'slide', direction:'left', easing: {type: 'ease-out'}});
+    				me.loadDocumentsBlocks();
+				window.setTimeout(function(){ // load blocks è asincrono
+					me.onPrintButton();
+				}, 1000);
+				
     			}
     		},
 
@@ -10904,7 +10924,36 @@ Ext.define('Vtecrm.view.ListPdfMaker', {
     	values.templateid = templateid;
     	values.record = me.getCrmid();
     	values.module = me.getModule();
+	console.log('asd', values);
     	me.saveDocument(values);
+    },
+    
+    
+
+    /**segnalibro
+     * Called when the "save" button is pressed
+     */
+    onPrintButton: function(self) {
+    	var me = this,
+    		formDocs = me.down('#formDocs'),
+    		values = formDocs.getValues(),
+    		listTemplates = me.down('#listTemplates'),
+    		tpls = listTemplates.getSelection();
+
+    	// check fields
+    	if (empty(values.notes_title) || values.folderid == 0) {
+    		Ext.Msg.alert(LANG.warning, LANG.fill_mandatory);
+    		return;
+    	} else if (tpls.length == 0) {
+    		Ext.Msg.alert(LANG.warning, LANG.choose_template);
+    		return;
+    	}
+    	// now save!
+    	var templateid = tpls[0].get('templateid');
+    	values.templateid = templateid;
+    	values.record = me.getCrmid();
+    	values.module = me.getModule();
+    	me.printDocument(values);
     },
 
     /**
@@ -11006,6 +11055,43 @@ Ext.define('Vtecrm.view.ListPdfMaker', {
 				newList.show();
 				
 		    		});
+		    	} else {
+		    		Ext.Msg.alert(LANG.error, response.error);
+		    	}
+		    },
+		});
+    },
+    
+    /**segnalibro nuovo web service
+     * prints the document without saving it
+     */
+    printDocument: function(values) {
+	// segnalibro modificata interamente
+    	var me = this,
+    		mtime =  (new Date()).getTime();
+
+    	maskView();
+		Ext.Ajax.request({
+			url: vtwsUrl + 'ws.php?wsname=PDFMaker&subaction=print&_dc='+mtime, 
+			params: vtwsOpts+Ext.Object.toQueryString(values),
+			method: 'POST',
+			useDefaultXhrHeader: false, // prevent OPTIONS request, enable for cross site
+		    success: function (b) {
+		    	if (empty(b.responseText)) return;
+			
+
+		    	try {
+		    		var response = Ext.decode(b.responseText);
+			
+		    	} catch (e) {
+		    		Ext.Msg.alert(LANG.error, LANG.invalid_server_response);
+		    		unMaskView();
+		    		return;
+		    	}
+		    	unMaskView();
+		    	if (response.success == true) {
+		    		window.open(vtwsUrl.slice(0, -14) + response['result'], '_system', 'location=no');
+
 		    	} else {
 		    		Ext.Msg.alert(LANG.error, response.error);
 		    	}
@@ -21482,36 +21568,6 @@ Ext.define('Vtecrm.view.ShowRecord', {
 					this.down('#btnPdf').hide();
 					this.down('#recordBtnDelete').hide();
 					this.down('#recordFormCont').hide();
-                                        
-//                                        newList = Ext.create('Vtecrm.view.ListSearch', {
-//					'module': 'Documents',
-//					'toolbar': true,
-//					'useSearch': true,
-//					'centered': true,
-//					'height': '80%',
-//					'width': '80%',
-//					'hideOnMaskTap': true,
-//					'useBackButton': false,
-//					'modal': true,
-//					extraFields: ['description', 'filename'],
-			
-//					listeners: {
-//						// override tap handler
-//						itemtap: function(self, index, target, record, e){
-//							Vtecrm.app.touchRequest('GetRecord', {'module': 'Documents', 'record': record.raw.crmid}, true, function(data) {
-//								window.open(data.filename, '_system', 'location=no');
-//							});
-//						}
-//					}
-//				});
-//                                newList.getStore().setPageSize(10000);
-//				newList.getStore().load();
-//                                //segnalibro filtro col nome del rapportino
-//                               newList.getStore().filterBy(function(record){
-//                                    if(record.get('entityname') == globalEventSelected) 
-//                                        return true; 
-//                                });
-//				newList.show();
                                 
 					this.populatePdfMaker(2500000);
 				}
